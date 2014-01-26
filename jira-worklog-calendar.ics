@@ -1,0 +1,57 @@
+ #!/bin/bash
+
+# jira worklog calendar
+
+# before Jira 6.1
+PG_ISSUEKEY="i.pkey"
+# Jira 6.1 and above
+PG_ISSUEKEY="p.pkey||'-'||i.issuenum"
+PG_PSQL="PGPASSWORD=jirauser psql -q -h localhost -p 5432 -U jirauser -d jiradb"
+JIRA_URI=https://www.gerritgriebel.de/jira/secure
+JIRA_USER=gg
+ICAL_UID=-gg-jira
+ICAL_TZ=Europe/Berlin
+ICAL_DAYS=7
+
+echo "Content-type: text/calendar"
+echo ""
+echo "BEGIN:VCALENDAR"
+eval "$PG_PSQL" << EOF
+\t
+\pset format unaligned
+select -- worklogs
+      'BEGIN:VEVENT'||E'\n'
+    ||'UID:'||wl.id||'$ICAL_UID'||E'\n'
+    ||'SUMMARY:'||i.summary||' ('||$PG_ISSUEKEY||', '||it.pname||')'||E'\n'
+    ||'DESCRIPTION:'||wl.worklogbody||E'\n'
+    ||'DTSTART;TZID=$ICAL_TZ:'||to_char(wl.startdate,'YYYYMMDD"T"HH24MISS')||E'\n'
+    ||'DTEND;TZID=$ICAL_TZ:'||to_char(wl.startdate + interval '1 second' * timeworked,'YYYYMMDD"T"HH24MISS')||E'\n'
+    ||'URL;VALUE=URI:$JIRA_URI/UpdateWorklog!default.jspa?id='||i.id||'&worklogId='||wl.id||E'\n'
+    ||'END:VEVENT'
+from
+    worklog wl
+    join jiraissue i on wl.issueid = i.id
+    join project p on p.id = i.project
+    join issuetype it on i.issuetype = it.id
+where
+    CURRENT_DATE-$ICAL_DAYS <= cast(wl.created as date) and
+    wl.author = '$JIRA_USER'
+union
+select -- daily total
+      'BEGIN:VEVENT'||E'\n'
+    ||'UID:'||to_char(wl.startdate,'YYYYMMDD')||'$ICAL_UID'||E'\n'
+    ||'SUMMARY: Total '||to_char(interval '1 second'*sum(timeworked),'HH24:MI')||E'\n'
+    ||'DTSTART;TZID=$ICAL_TZ:'||to_char(wl.startdate,'YYYYMMDD')||E'\n'
+    ||'DTEND;TZID=$ICAL_TZ:'||to_char(wl.startdate + interval '1 day','YYYYMMDD')||E'\n'
+    ||'END:VEVENT'
+from
+    worklog wl
+where
+    CURRENT_DATE-$ICAL_DAYS <= cast(wl.created as date) and
+    wl.author = '$JIRA_USER'
+group by
+    to_char(wl.startdate,'YYYYMMDD'),
+    to_char(wl.startdate + interval '1 day','YYYYMMDD')
+;
+EOF
+echo "END:VCALENDAR"
