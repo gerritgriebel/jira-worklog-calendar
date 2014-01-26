@@ -1,17 +1,16 @@
- #!/bin/bash
-
-# jira worklog calendar
+#!/bin/bash
 
 # before Jira 6.1
 PG_ISSUEKEY="i.pkey"
 # Jira 6.1 and above
 PG_ISSUEKEY="p.pkey||'-'||i.issuenum"
-PG_PSQL="PGPASSWORD=jirauser psql -q -h localhost -p 5432 -U jirauser -d jiradb"
-JIRA_URI=https://www.gerritgriebel.de/jira/secure
-JIRA_USER=gg
-ICAL_UID=-gg-jira
-ICAL_TZ=Europe/Berlin
-ICAL_DAYS=7
+
+PG_PSQL="PGPASSWORD=<pg jira users password> psql -q -h <pg host> -p <pg port> -U <pg jira user> -d <pg jira db>"
+JIRA_URI=<Jira URL, for example: https://www.example.com/jira/secure>
+JIRA_USER=<jira user name>
+ICAL_UID=<ical UID, just some string>
+ICAL_TZ=<time zone, for example: Europe/Berlin>
+ICAL_DAYS=<number of days backwards to show, for example for one week: 7>
 
 echo "Content-type: text/calendar"
 echo ""
