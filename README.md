@@ -7,7 +7,7 @@ The idea is to allow for a personal daily retrospective in your calendar (Google
 
 The script contains just a single SQL which returns an ical event for each Jira worklog and in addition a full day event with the sum of all worklogs of a day.
 
-Grab it and modify to your liking and subscribe to you new calendar.
+Grab it and modify to your liking and subscribe to your new calendar.
 
 Prerequisites
 =============
