@@ -21,7 +21,7 @@ eval "$PG_PSQL" << EOF
 select -- worklogs
       'BEGIN:VEVENT'||E'\n'
     ||'UID:'||wl.id||'$ICAL_UID'||E'\n'
-    ||'SUMMARY:'||i.summary||' ('||$PG_ISSUEKEY||', '||it.pname||')'||E'\n'
+    ||'SUMMARY:'||i.summary||' ('||$PG_ISSUEKEY||', '||it.pname||') '||round(timeworked/60)||' min'||E'\n'
     ||'DESCRIPTION:'||regexp_replace(wl.worklogbody, E'[\\n\\r]+', ' ', 'g' )||E'\n'
     ||'DTSTART;TZID=$ICAL_TZ:'||to_char(wl.startdate,'YYYYMMDD"T"HH24MISS')||E'\n'
     ||'DTEND;TZID=$ICAL_TZ:'||to_char(wl.startdate + interval '1 second' * timeworked,'YYYYMMDD"T"HH24MISS')||E'\n'
