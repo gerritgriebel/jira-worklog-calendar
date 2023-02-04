@@ -9,6 +9,8 @@ The script contains just a single SQL which returns an ical event for each Jira 
 
 Grab it and modify to your liking and subscribe to your new calendar.
 
+Note: There's also a REST-API to achieve the same without DB-Access: <Jira-URL>/rest/api/2/search?jql=worklogAuthor=<user>&fields=worklog
+
 Prerequisites
 =============
 - Jira on Unix and Postgres
